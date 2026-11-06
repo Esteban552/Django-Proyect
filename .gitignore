@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+db.sqlite3
+
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Variables locales y salidas
+.env
+.env.*
+!.env.example
+staticfiles/
+media/
+*.log
+.pytest_cache/
+.coverage
+htmlcov/
+/tmp/
+.idea/
+.vscode/
+Thumbs.db
+Desktop.ini

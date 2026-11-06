@@ -1,9 +1,11 @@
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from .models import Category, Product
+
+User = get_user_model()
 
 
 class CategoryAPITests(APITestCase):
@@ -32,11 +34,13 @@ class CategoryAPITests(APITestCase):
 
 class ProductAPITests(APITestCase):
     def setUp(self):
-        self.usuario = User.objects.create_user(username='tester', password='test1234')
+        self.usuario = User.objects.create_user(
+            username='tester', email='tester@example.com', student_id='T-0001', password='test1234'
+        )
         self.categoria = Category.objects.create(name='Electronica')
         token_response = self.client.post(
             reverse('token_obtain_pair'),
-            {'username': 'tester', 'password': 'test1234'},
+            {'email': 'tester@example.com', 'password': 'test1234'},
             format='json',
         )
         self.assertEqual(token_response.status_code, status.HTTP_200_OK)

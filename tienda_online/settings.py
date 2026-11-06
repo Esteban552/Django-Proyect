@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 from datetime import timedelta
+import os
 from pathlib import Path
 
 from django.db.backends.base.base import BaseDatabaseWrapper
@@ -24,12 +25,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-6xcrb!yqz4&6+0r+fr2khs6eko&b1=mqxl1hilj@6!o8$#vk*#'
+SECRET_KEY = os.getenv(
+    'DJANGO_SECRET_KEY',
+    'dev-only-change-this-key-before-deployment',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'testserver']
 
 # Application definition
 
@@ -44,6 +48,8 @@ INSTALLED_APPS = [
     'products',
     'django_filters',
     'rest_framework_simplejwt',
+    'drf_yasg',
+    'users',
 ]
 
 THIRD_APPS = [
@@ -86,29 +92,44 @@ WSGI_APPLICATION = 'tienda_online.wsgi.application'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
     ),
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=30),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
     'ROTATE_REFRESH_TOKENS': True,
+}
+
+AUTH_USER_MODEL = 'users.User'
+SWAGGER_SETTINGS = {
+    'DEFAULT_INFO': 'tienda_online.urls.swagger_info',
+    'USE_SESSION_AUTH': True,
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {'type': 'apiKey', 'name': 'Authorization', 'in': 'header'},
+    },
+    'SECURITY_REQUIREMENTS': [{'Bearer': []}],
 }
 
 
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.mysql',
-            'NAME': 'hackathon',
-            'USER': 'root',
-            'PASSWORD': '123456',
-            'HOST': 'localhost',
-            'PORT': '3306',
-    }
-}
+if os.getenv('DB_ENGINE') == 'mysql':
+    DATABASES = {'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': os.getenv('DB_NAME', 'hackathon'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', 'localhost'),
+        'PORT': os.getenv('DB_PORT', '3306'),
+    }}
+else:
+    DATABASES = {'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }}
 
 
 # Password validation
